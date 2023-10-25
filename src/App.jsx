@@ -7,11 +7,11 @@ function App() {
   // const [count, setCount] = useState(0)
 
   return (
-    <>
-      <Container>
+  <>
+<Container>
   <Row xs="3">
-    <Col className="bg-light border">
-      <Card>
+    <Col>
+      <Card style={{'height': '90vh'}}>
         <CardHeader>
           <h5>Find</h5>
         </CardHeader>
@@ -47,53 +47,57 @@ function App() {
         </CardBody>
       </Card>
     </Col>
-    <Col className="bg-light border">
-      <Card>
+    <Col>
+      <Card style={{'height': '90vh'}}>
         <CardHeader>
         <h5>Resize & Compress</h5>
         </CardHeader>
-        <CardBody>
+        <CardBody style= {{textAlign:'center'}}>
           <div style={{
-            'width':'120px',
-            'height':'120px',
-            'backgroundColor': 'green',
-            'display': 'flex',
-            'justify-content': 'center'
+            paddingTop: '20%',
+            backgroundColor: 'green',
+            display: 'flex',
+            justifyContent: 'center',
+            margin: 'auto',
+            width: '50%'
             }}>
-            <img src="https://picsum.photos/300/200" style={{'width':'100px', 'height':'100px', 'position': 'relative', 'object-fit' : 'cover'}}></img>
+            <img src="https://picsum.photos/300/200" style={{width:'100px', height:'100px', position: 'relative', objectFit : 'cover'}}></img>
           </div>
-          <h6>
+          <h6 className="mt-2">
             <a href=''>image.png</a>
           </h6>
-          <ListGroup>
+          <h5 className="mt-2">
+            <p>Resolutions</p>
+          </h5>
+          <ListGroup className="mt-3" style={{'width': '66%', 'margin':'auto', 'textAlign':'left'}}>
             <ListGroupItem>
-              <Input type="checkbox" />
+              <Input type="checkbox" />&nbsp;
               <Label check>Facebook Post</Label>
             </ListGroupItem>
             <ListGroupItem>
-              <Input type="checkbox" />
+              <Input type="checkbox" />&nbsp;
               <Label check>Instagram Post</Label>
             </ListGroupItem>
             <ListGroupItem>
-              <Input type="checkbox" />
+              <Input type="checkbox" />&nbsp;
               <Label check>LinkedIn...</Label>
             </ListGroupItem>
             <ListGroupItem>
-              <Input type="checkbox" />
+              <Input type="checkbox" />&nbsp;
               <Label check>...</Label>
             </ListGroupItem>
             <ListGroupItem>
-              <Input type="checkbox" />
+              <Input type="checkbox" />&nbsp;
               <Label check>...</Label>
             </ListGroupItem>
           </ListGroup>
 
-          <Button>Download</Button>
+          <Button className="mt-3" color="success">Download</Button>
         </CardBody>
       </Card>
     </Col>
-    <Col className="bg-light border">
-      <Card>
+    <Col>
+      <Card style={{height: '90vh'}}>
         <CardHeader>
           <h5>History</h5>
         </CardHeader>
