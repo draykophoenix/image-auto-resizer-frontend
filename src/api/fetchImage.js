@@ -1,4 +1,3 @@
-// unsplash.js
 import { createApi } from 'unsplash-js';
 
 // const proxiedApi = createApi({
@@ -8,15 +7,6 @@ import { createApi } from 'unsplash-js';
 const tempKeyedApi = createApi({
   accessKey: "MVD5e8doDm10FXRTCXPY6HeEMGUMV6eLbLqAHp0wruE"
 });
-
-export async function getRandomPhoto(query) {
-  const response = await tempKeyedApi.photos.getRandom({ query });
-  if (response.errors) {
-    throw new Error("Error fetching random photo: " + response.errors[0]);
-  }
-  return response
-  // return response.response.links.download;
-}
 
 export async function getPhotosByQuery(query) {
   const res = await tempKeyedApi.search.getPhotos({ query, perPage: 5 });
@@ -28,7 +18,7 @@ export async function getPhotosByQuery(query) {
     width: image.width,
     height: image.height,
     caption: image.description,
-    download: image.links.download,
+    url: image.urls.regular,
     link: image.links.html,
     creditName: image.user.name
   }});

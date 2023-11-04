@@ -1,23 +1,25 @@
 /* eslint-disable react/prop-types */
 import { useState } from 'react'
-import { getPhotosByQuery } from './fetchImage.js'
-import { Container, Row, Col, InputGroup, Button, Input, Label, Card, CardBody, ListGroup, ListGroupItem, CardHeader  } from 'reactstrap';
-import { BsSearch } from "react-icons/bs";
+import { getPhotosByQuery } from './api/fetchImage.js'
+import { requestJob } from './api/frontendServer.js'
+import { Container, Row, Col, InputGroup, Button, Input, Label, Card, CardBody, ListGroup, ListGroupItem, CardHeader, InputGroupText } from 'reactstrap';
+import { MdSearch } from "react-icons/md";
 import { Gallery } from "react-grid-gallery";
 import './App.css'
 
 function App() {
-  const [image, setImage] = useState({})
+  const [image, setImage] = useState({});
+  const [zipName, setZipName] = useState("");
 
   return (
   <>
 <Container>
   <Row xs="1" s="2" md="2" lg="3">
     <Col>
-      <FindCard setImage={setImage}/>
+      <FindCard {...{setImage, setZipName}}/>
     </Col>
     <Col>
-      <WorkCard image={image}/>
+      <WorkCard {...{image, zipName, setZipName}}/>
     </Col>
     <Col>
       <DownloadCard/>
@@ -28,7 +30,7 @@ function App() {
   )
 }
 
-function FindCard({setImage}) {
+function FindCard({setImage, setZipName}) {
   const [query, setQuery] = useState("");
   const [photos, setPhotos] = useState([]) ;
 
@@ -41,10 +43,11 @@ function FindCard({setImage}) {
     const image = photos[index]
     setImage({
       src: image.src,
-      download: image.download,
+      url: image.url,
       link: image.link,
-      creditName: image.creditName
+      creditName: image.creditName,
     });
+    setZipName(query.replace(" ", "_"));
   };
 
   return <>
@@ -59,18 +62,17 @@ function FindCard({setImage}) {
               onChange={e => setQuery(e.target.value)}
               onKeyUp={e => {if (e.key === 'Enter') handleSearch()}}
               />
-            <Button onClick={handleSearch}><BsSearch/></Button>
+            <Button onClick={handleSearch}><MdSearch/></Button>
           </InputGroup>
-          <h6>
-            Results
-          </h6>
-          <Gallery images={photos} onClick={handleSelect} />
+          {(photos.length)? <h5 className='my-2'>Results</h5> : <></> }
+          <Gallery images={photos} onClick={handleSelect} style={{backgroundColor: "green"}} />
         </CardBody>
       </Card>
     </>
 }
 
-function WorkCard({image}) {
+function WorkCard({image, zipName, setZipName}) {
+
   return <>
     <Card style={{'height': '90vh'}}>
         <CardHeader>
@@ -78,7 +80,6 @@ function WorkCard({image}) {
         </CardHeader>
         <CardBody style= {{textAlign:'center'}}>
           <div style={{
-            backgroundColor: 'green',
             display: 'flex',
             justifyContent: 'center',
             margin: 'auto',
@@ -87,9 +88,14 @@ function WorkCard({image}) {
             <img src={image.src} style={{width:'250px', height:'250px', position: 'relative', objectFit : 'cover'}}></img>
           </div>
           <h6 className="mt-2">
-            <a href={image.link}>{image.creditName} {image.creditName? "| Unsplash" : <>&nbsp;</>}</a>
-
-          </h6>
+            <a target="_blank" rel="noopener noreferrer" href={image.link}>{image.creditName} {image.creditName? "| Unsplash" : <><i>select an image</i></>}</a>
+          </h6> 
+          <InputGroup>
+            <InputGroupText>
+              Name
+            </InputGroupText>
+            <Input onChange={e => setZipName(e.target.value.replace(" ", "_"))} value={zipName} disabled={!image.src}/>
+          </InputGroup>
           <h5 className="mt-2">
             <p>Resolutions</p>
           </h5>
@@ -116,7 +122,7 @@ function WorkCard({image}) {
             </ListGroupItem>
           </ListGroup>
 
-          <Button className="mt-3" color="success">Download</Button>
+          <Button className="mt-3" color="primary" onClick={() => requestJob(zipName, image.url)}>Send resize</Button>
         </CardBody>
       </Card>
   </>
@@ -131,15 +137,15 @@ function DownloadCard() {
         <CardBody>
           <ListGroup>
             <ListGroupItem>
-              <BsSearch/>&nbsp;
+              <MdSearch/>&nbsp;
               <a href=''>&quot;frog&quot;</a>
             </ListGroupItem>
             <ListGroupItem>
-              <BsSearch/>&nbsp;
+              <MdSearch/>&nbsp;
               <a href=''>&quot;trees&quot;</a>
             </ListGroupItem>
             <ListGroupItem>
-              <BsSearch/>&nbsp;
+              <MdSearch/>&nbsp;
               <a href=''>&quot;nature&quot;</a>
             </ListGroupItem>
           </ListGroup>

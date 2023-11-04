@@ -1,7 +1,3 @@
-1. Images are displayed in a paginated grid layout
-2. Search queries Unsplash, returning a list of image URL's
-3. The images are displayed in the results grid
-4. When an image is clicked, it is displayed on the resize & compress card
 5. When the resize button is pressed, a request is posted to the backend with the image and resize options
 6. The client periodically queries the backend for any new zip's
 7. New zip's are displayed in a table on the last card
