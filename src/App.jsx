@@ -1,20 +1,23 @@
-// import { useState } from 'react'
+/* eslint-disable react/prop-types */
+import { useState } from 'react'
+import { getPhotosByQuery } from './fetchImage.js'
 import { Container, Row, Col, InputGroup, Button, Input, Label, Card, CardBody, ListGroup, ListGroupItem, CardHeader  } from 'reactstrap';
 import { BsSearch } from "react-icons/bs";
+import { Gallery } from "react-grid-gallery";
 import './App.css'
 
 function App() {
-  // const [count, setCount] = useState(0)
+  const [image, setImage] = useState({})
 
   return (
   <>
 <Container>
   <Row xs="1" s="2" md="2" lg="3">
     <Col>
-      <FindCard/>
+      <FindCard setImage={setImage}/>
     </Col>
     <Col>
-      <WorkCard/>
+      <WorkCard image={image}/>
     </Col>
     <Col>
       <DownloadCard/>
@@ -25,47 +28,45 @@ function App() {
   )
 }
 
-function FindCard() {
-    return <>
+function FindCard({setImage}) {
+  const [query, setQuery] = useState("");
+  const [photos, setPhotos] = useState([]) ;
+
+  async function handleSearch() {
+    setPhotos([])
+    getPhotosByQuery(query).then(res => setPhotos(res))
+  }
+
+  const handleSelect = (index, item) => {
+    setImage({
+      url: item.src, 
+    });
+  };
+
+  return <>
       <Card style={{'height': '90vh'}}>
         <CardHeader>
           <h5>Find</h5>
         </CardHeader>
         <CardBody>
           <InputGroup>
-            <Input placeholder="Search" />
-            <Button><BsSearch/></Button>
+            <Input 
+              placeholder="Search" 
+              onChange={e => setQuery(e.target.value)}
+              onKeyUp={e => {if (e.key === 'Enter') handleSearch()}}
+              />
+            <Button onClick={handleSearch}><BsSearch/></Button>
           </InputGroup>
           <h6>
             Results
           </h6>
-          <div style={{backgroundColor:'green'}}>
-            <Container>
-              <Row xs="2">
-                <Col className="bg-light border">
-                  <img src="https://picsum.photos/300/200" style={{'width':'150px', 'height':'100px', 'object-fit' : 'cover'}}></img>
-                </Col>
-                <Col className="bg-light border">
-                  <img src="https://picsum.photos/300/200" style={{'width':'150px', 'height':'100px', 'object-fit' : 'cover'}}></img>
-                </Col>
-                <Col className="bg-light border">
-                  <img src="https://picsum.photos/300/200" style={{'width':'150px', 'height':'100px', 'object-fit' : 'cover'}}></img>
-                </Col>
-                <Col className="bg-light border">
-                  <img src="https://picsum.photos/300/200" style={{'width':'150px', 'height':'100px', 'object-fit' : 'cover'}}></img>
-                </Col>
-                <Col className="bg-light border">
-                  <img src="https://picsum.photos/300/200" style={{'width':'150px', 'height':'100px', 'object-fit' : 'cover'}}></img>
-                </Col>
-              </Row>
-            </Container>
-          </div>
+          <Gallery images={photos} onClick={handleSelect} />
         </CardBody>
       </Card>
     </>
 }
 
-function WorkCard() {
+function WorkCard({image}) {
   return <>
     <Card style={{'height': '90vh'}}>
         <CardHeader>
@@ -73,14 +74,13 @@ function WorkCard() {
         </CardHeader>
         <CardBody style= {{textAlign:'center'}}>
           <div style={{
-            paddingTop: '20%',
             backgroundColor: 'green',
             display: 'flex',
             justifyContent: 'center',
             margin: 'auto',
             width: '50%'
             }}>
-            <img src="https://picsum.photos/300/200" style={{width:'100px', height:'100px', position: 'relative', objectFit : 'cover'}}></img>
+            <img src={image.url} style={{width:'250px', height:'250px', position: 'relative', objectFit : 'cover'}}></img>
           </div>
           <h6 className="mt-2">
             <a href=''>image.png</a>
