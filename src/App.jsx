@@ -9,8 +9,24 @@ function App() {
   return (
   <>
 <Container>
-  <Row xs="3">
+  <Row xs="1" s="2" md="2" lg="3">
     <Col>
+      <FindCard/>
+    </Col>
+    <Col>
+      <WorkCard/>
+    </Col>
+    <Col>
+      <DownloadCard/>
+    </Col>
+  </Row>
+</Container>
+    </>
+  )
+}
+
+function FindCard() {
+    return <>
       <Card style={{'height': '90vh'}}>
         <CardHeader>
           <h5>Find</h5>
@@ -46,9 +62,12 @@ function App() {
           </div>
         </CardBody>
       </Card>
-    </Col>
-    <Col>
-      <Card style={{'height': '90vh'}}>
+    </>
+}
+
+function WorkCard() {
+  return <>
+    <Card style={{'height': '90vh'}}>
         <CardHeader>
         <h5>Resize & Compress</h5>
         </CardHeader>
@@ -95,9 +114,12 @@ function App() {
           <Button className="mt-3" color="success">Download</Button>
         </CardBody>
       </Card>
-    </Col>
-    <Col>
-      <Card style={{height: '90vh'}}>
+  </>
+}
+
+function DownloadCard() {
+  return <>
+    <Card style={{height: '90vh'}}>
         <CardHeader>
           <h5>History</h5>
         </CardHeader>
@@ -118,11 +140,7 @@ function App() {
           </ListGroup>
         </CardBody>
       </Card>
-    </Col>
-  </Row>
-</Container>
-    </>
-  )
+  </>
 }
 
 export default App
