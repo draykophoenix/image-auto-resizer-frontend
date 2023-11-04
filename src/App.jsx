@@ -37,9 +37,13 @@ function FindCard({setImage}) {
     getPhotosByQuery(query).then(res => setPhotos(res))
   }
 
-  const handleSelect = (index, item) => {
+  const handleSelect = (index) => {
+    const image = photos[index]
     setImage({
-      url: item.src, 
+      src: image.src,
+      download: image.download,
+      link: image.link,
+      creditName: image.creditName
     });
   };
 
@@ -80,10 +84,11 @@ function WorkCard({image}) {
             margin: 'auto',
             width: '50%'
             }}>
-            <img src={image.url} style={{width:'250px', height:'250px', position: 'relative', objectFit : 'cover'}}></img>
+            <img src={image.src} style={{width:'250px', height:'250px', position: 'relative', objectFit : 'cover'}}></img>
           </div>
           <h6 className="mt-2">
-            <a href=''>image.png</a>
+            <a href={image.link}>{image.creditName} {image.creditName? "| Unsplash" : <>&nbsp;</>}</a>
+
           </h6>
           <h5 className="mt-2">
             <p>Resolutions</p>

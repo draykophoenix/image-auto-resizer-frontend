@@ -23,14 +23,13 @@ export async function getPhotosByQuery(query) {
   if (res.errors) {
     throw new Error("Error fetching queried photo: " + res.errors[0]);
   }
-  return res.response.results.map(mapUnsplashToGallery)
-}
-
-function mapUnsplashToGallery(unsplashPhoto) {
-  return {
-    src: unsplashPhoto.urls.small,
-    width: unsplashPhoto.width,
-    height: unsplashPhoto.height,
-    caption: unsplashPhoto.description
-  }
+  return res.response.results.map(image => {return {
+    src: image.urls.small, 
+    width: image.width,
+    height: image.height,
+    caption: image.description,
+    download: image.links.download,
+    link: image.links.html,
+    creditName: image.user.name
+  }});
 }
