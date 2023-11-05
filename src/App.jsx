@@ -7,7 +7,7 @@ import sleep from './utils/sleep.jsx'
 import loadTest from './utils/loadTest.jsx'
 
 import { useState, useCallback } from 'react'
-import { Container, Row, Col, InputGroup, Button, Input, Card, CardBody, CardHeader, InputGroupText, FormFeedback, Alert } from 'reactstrap';
+import { Container, Row, Col, InputGroup, Button, Input, Card, CardBody, CardHeader, InputGroupText, FormFeedback, Alert, Badge } from 'reactstrap';
 import { MdSearch } from "react-icons/md";
 import { Gallery } from "react-grid-gallery";
 import { AgGridReact } from "ag-grid-react";
@@ -45,6 +45,8 @@ function FindCard({setImage, setZipName}) {
 
   const [loadCount, setLoadCount] = useState(30);
   const [loadDelay, setLoadDelay] = useState(500);
+  const [loadStrikes, setLoadStrikes] = useState(0);
+
 
   const specialCharactersPattern = /[!@#$%^&*()+{}[\]:;<>,.?~\\]/;
   const handleInput = (e) => {
@@ -99,12 +101,13 @@ function FindCard({setImage, setZipName}) {
           <InputGroup hidden={query !== "LOAD"} className="my-3 pe-5">
             <InputGroupText>Delay</InputGroupText>
             <Input value={loadDelay} onChange={e => setLoadDelay(e.target.value)}></Input>
-            </InputGroup>
+          </InputGroup>
           <Button 
           className='m-3' color='danger' 
           hidden={query !== "LOAD"}
-          onClick={() => loadTest(loadCount, loadDelay)}
+          onClick={() => loadTest(loadCount, loadDelay, setLoadStrikes)}
           >Load Test</Button>
+          <div className='ms-3'><Badge hidden={query !== "LOAD" || loadStrikes === 0} color="danger">Strikes: {loadStrikes}</Badge></div>
         </CardBody>
       </Card>
     </>
