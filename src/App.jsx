@@ -4,16 +4,16 @@ import { getPhotosByQuery } from './api/fetchImage.js'
 import { uploadImageToS3, pollForZips, readFileFromS3 } from './api/frontendServer.js'
 import useInterval from './utils/useInterval.jsx'
 import sleep from './utils/sleep.jsx'
-
+import loadTest from './utils/loadTest.jsx'
 
 import { useState, useCallback } from 'react'
 import { Container, Row, Col, InputGroup, Button, Input, Card, CardBody, CardHeader, InputGroupText, FormFeedback, Alert } from 'reactstrap';
 import { MdSearch } from "react-icons/md";
 import { Gallery } from "react-grid-gallery";
 import { AgGridReact } from "ag-grid-react";
-
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
+
 
 function App() {
   const [image, setImage] = useState({});
@@ -40,7 +40,23 @@ function App() {
 
 function FindCard({setImage, setZipName}) {
   const [query, setQuery] = useState("");
-  const [photos, setPhotos] = useState([]) ;
+  const [photos, setPhotos] = useState([]);
+  const [invalid, setInvalid] = useState(false);
+
+  const [loadCount, setLoadCount] = useState(30);
+  const [loadDelay, setLoadDelay] = useState(500);
+
+  const specialCharactersPattern = /[!@#$%^&*()+{}[\]:;<>,.?~\\]/;
+  const handleInput = (e) => {
+    if (specialCharactersPattern.test(e.target.value)) {
+      setInvalid(true)
+    } else {
+      if (invalid) {
+        setInvalid(false)
+      }
+      setQuery(e.target.value)
+    }
+  }
 
   async function handleSearch() {
     setPhotos([])
@@ -67,21 +83,35 @@ function FindCard({setImage, setZipName}) {
           <InputGroup>
             <Input 
               placeholder="Search" 
-              onChange={e => setQuery(e.target.value)}
+              onChange={handleInput}
               onKeyUp={e => {if (e.key === 'Enter') handleSearch()}}
+              invalid={invalid}
+              valid={query === "LOAD"}
               />
             <Button onClick={handleSearch}><MdSearch/></Button>
           </InputGroup>
           {(photos.length)? <h5 className='my-2'>Results</h5> : <></> }
-          <Gallery images={photos} onClick={handleSelect} style={{backgroundColor: "green"}} />
+          <Gallery images={photos} onClick={handleSelect} />
+          <InputGroup hidden={query !== "LOAD"} className="my-3 pe-5">
+            <InputGroupText>Count</InputGroupText>
+            <Input value={loadCount} onChange={e => setLoadCount(e.target.value)}></Input>
+          </InputGroup>
+          <InputGroup hidden={query !== "LOAD"} className="my-3 pe-5">
+            <InputGroupText>Delay</InputGroupText>
+            <Input value={loadDelay} onChange={e => setLoadDelay(e.target.value)}></Input>
+            </InputGroup>
+          <Button 
+          className='m-3' color='danger' 
+          hidden={query !== "LOAD"}
+          onClick={() => loadTest(loadCount, loadDelay)}
+          >Load Test</Button>
         </CardBody>
       </Card>
     </>
 }
 
 function WorkCard({image, zipName, setZipName}) {
-  
-  const [invalid, setInvalid] = useState(false)
+  const [invalid, setInvalid] = useState(false);
   const [alert, setAlert] = useState(false);
 
   const specialCharactersPattern = /[!@#$%^&*()+{}[\]:;<>,.?~\\]/;
@@ -145,7 +175,7 @@ function WorkCard({image, zipName, setZipName}) {
 function DownloadCard() {
   useInterval(() => {
     pollForZips().then(data => setRowData(data))
-  }, 5000) // 5 seconds
+  }, 3000) // 5 seconds
 
   const [rowData, setRowData] = useState([])
 
