@@ -3,16 +3,17 @@ import './App.css'
 import { getPhotosByQuery } from './api/fetchImage.js'
 import { uploadImageToS3, pollForZips, readFileFromS3 } from './api/frontendServer.js'
 import useInterval from './helper/useInterval.jsx'
+import sleep from './helper/sleep.jsx'
+
 
 import { useState, useCallback } from 'react'
-import { Container, Row, Col, InputGroup, Button, Input, Card, CardBody, CardHeader, InputGroupText, FormFeedback } from 'reactstrap';
+import { Container, Row, Col, InputGroup, Button, Input, Card, CardBody, CardHeader, InputGroupText, FormFeedback, Alert } from 'reactstrap';
 import { MdSearch } from "react-icons/md";
 import { Gallery } from "react-grid-gallery";
 import { AgGridReact } from "ag-grid-react";
 
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-
 
 function App() {
   const [image, setImage] = useState({});
@@ -21,14 +22,14 @@ function App() {
   return (
   <>
 <Container>
-  <Row xs="1" s="2" md="2" lg="4">
-    <Col lg="3">
+  <Row xs="1" s="2" md="2" lg="3">
+    <Col>
       <FindCard {...{setImage, setZipName}}/>
     </Col>
-    <Col lg="3">
+    <Col>
       <WorkCard {...{image, zipName, setZipName}}/>
     </Col>
-    <Col lg="6">
+    <Col>
       <DownloadCard/>
     </Col>
   </Row>
@@ -81,8 +82,10 @@ function FindCard({setImage, setZipName}) {
 function WorkCard({image, zipName, setZipName}) {
   
   const [invalid, setInvalid] = useState(false)
+  const [alert, setAlert] = useState(false);
 
   const specialCharactersPattern = /[!@#$%^&*()_+{}[\]:;<>,.?~\\]/;
+
   const handleInput = (e) => {
     if (specialCharactersPattern.test(e.target.value)) {
       setInvalid(true)
@@ -92,10 +95,14 @@ function WorkCard({image, zipName, setZipName}) {
       }
       setZipName(e.target.value.replace(" ", "_"))
     }
+  }
 
-   
-}
-
+  const handleClick = async () => {
+    setAlert(true);
+    uploadImageToS3(image.url, zipName + ".jpg");
+    await sleep(2000)
+    setAlert(false)
+  }
 
   return <>
     <Card style={{'height': '90vh'}}>
@@ -118,14 +125,18 @@ function WorkCard({image, zipName, setZipName}) {
             <InputGroupText>
               Name
             </InputGroupText>
-            <Input onChange={handleInput} value={zipName} disabled={/*!*/image.src} invalid={invalid}/>
+            <Input onChange={handleInput} value={zipName} disabled={!image.src} invalid={invalid}/>
             <FormFeedback tooltip className='m-1 ms-5'>Name cannot include special characters</FormFeedback>
           </InputGroup>
           <Button 
             className="mt-3" color="primary" 
-            onClick={() => uploadImageToS3(image.url, zipName + ".jpg")}>
+            disabled={!image.src}
+            onClick={handleClick}>
             Send resize
           </Button>
+          <Alert className='mt-3' color="success" isOpen={alert} toggle={() => setAlert(false)}>
+            Upload of &apos;{zipName}&apos; successful!
+          </Alert>
         </CardBody>
       </Card>
   </>
@@ -134,7 +145,7 @@ function WorkCard({image, zipName, setZipName}) {
 function DownloadCard() {
   useInterval(() => {
     pollForZips().then(data => setRowData(data))
-  }, 3000) // 30 seconds
+  }, 500) // 5 seconds
 
   const [rowData, setRowData] = useState([])
 

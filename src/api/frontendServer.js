@@ -45,7 +45,7 @@ export function pollForZips() {
     return {
       name: file.Key,
       lastModified: new Date(file.LastModified).toLocaleString(),
-      size:Math.round((file.Size / 1000)) + "Mb"
+      size:Math.round((file.Size / 1000)) + "MB"
     }
   }))
 }
