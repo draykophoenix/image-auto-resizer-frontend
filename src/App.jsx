@@ -1,11 +1,18 @@
 /* eslint-disable react/prop-types */
-import { useState } from 'react'
+import './App.css'
 import { getPhotosByQuery } from './api/fetchImage.js'
-import { uploadImageToS3 } from './api/frontendServer.js'
-import { Container, Row, Col, InputGroup, Button, Input, Label, Card, CardBody, ListGroup, ListGroupItem, CardHeader, InputGroupText } from 'reactstrap';
+import { uploadImageToS3, pollForZips, readFileFromS3 } from './api/frontendServer.js'
+import useInterval from './helper/useInterval.jsx'
+
+import { useState, useCallback } from 'react'
+import { Container, Row, Col, InputGroup, Button, Input, Card, CardBody, CardHeader, InputGroupText, FormFeedback } from 'reactstrap';
 import { MdSearch } from "react-icons/md";
 import { Gallery } from "react-grid-gallery";
-import './App.css'
+import { AgGridReact } from "ag-grid-react";
+
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-alpine.css";
+
 
 function App() {
   const [image, setImage] = useState({});
@@ -14,14 +21,14 @@ function App() {
   return (
   <>
 <Container>
-  <Row xs="1" s="2" md="2" lg="3">
-    <Col>
+  <Row xs="1" s="2" md="2" lg="4">
+    <Col lg="3">
       <FindCard {...{setImage, setZipName}}/>
     </Col>
-    <Col>
+    <Col lg="3">
       <WorkCard {...{image, zipName, setZipName}}/>
     </Col>
-    <Col>
+    <Col lg="6">
       <DownloadCard/>
     </Col>
   </Row>
@@ -72,56 +79,48 @@ function FindCard({setImage, setZipName}) {
 }
 
 function WorkCard({image, zipName, setZipName}) {
+  
+  const [invalid, setInvalid] = useState(false)
+
+  const specialCharactersPattern = /[!@#$%^&*()_+{}[\]:;<>,.?~\\]/;
+  const handleInput = (e) => {
+    if (specialCharactersPattern.test(e.target.value)) {
+      setInvalid(true)
+    } else {
+      if (invalid) {
+        setInvalid(false)
+      }
+      setZipName(e.target.value.replace(" ", "_"))
+    }
+
+   
+}
+
 
   return <>
     <Card style={{'height': '90vh'}}>
         <CardHeader>
         <h5>Resize & Compress</h5>
         </CardHeader>
-        <CardBody style= {{textAlign:'center'}}>
+        <CardBody className="mt-2" style= {{textAlign:'center'}}>
           <div style={{
             display: 'flex',
             justifyContent: 'center',
             margin: 'auto',
-            width: '50%'
+            width: '100%'
             }}>
             <img src={image.src} style={{width:'250px', height:'250px', position: 'relative', objectFit : 'cover'}}></img>
           </div>
-          <h6 className="mt-2">
+          <h6 className="mt-3">
             <a target="_blank" rel="noopener noreferrer" href={image.link}>{image.creditName} {image.creditName? "| Unsplash" : <><i>select an image</i></>}</a>
           </h6> 
-          <InputGroup>
+          <InputGroup className='mt-3'>
             <InputGroupText>
               Name
             </InputGroupText>
-            <Input onChange={e => setZipName(e.target.value.replace(" ", "_"))} value={zipName} disabled={!image.src}/>
+            <Input onChange={handleInput} value={zipName} disabled={/*!*/image.src} invalid={invalid}/>
+            <FormFeedback tooltip className='m-1 ms-5'>Name cannot include special characters</FormFeedback>
           </InputGroup>
-          <h5 className="mt-2">
-            <p>Resolutions</p>
-          </h5>
-          <ListGroup className="mt-3" style={{'width': '66%', 'margin':'auto', 'textAlign':'left'}}>
-            <ListGroupItem>
-              <Input type="checkbox" />&nbsp;
-              <Label check>Facebook Post</Label>
-            </ListGroupItem>
-            <ListGroupItem>
-              <Input type="checkbox" />&nbsp;
-              <Label check>Instagram Post</Label>
-            </ListGroupItem>
-            <ListGroupItem>
-              <Input type="checkbox" />&nbsp;
-              <Label check>LinkedIn...</Label>
-            </ListGroupItem>
-            <ListGroupItem>
-              <Input type="checkbox" />&nbsp;
-              <Label check>...</Label>
-            </ListGroupItem>
-            <ListGroupItem>
-              <Input type="checkbox" />&nbsp;
-              <Label check>...</Label>
-            </ListGroupItem>
-          </ListGroup>
-
           <Button 
             className="mt-3" color="primary" 
             onClick={() => uploadImageToS3(image.url, zipName + ".jpg")}>
@@ -133,26 +132,43 @@ function WorkCard({image, zipName, setZipName}) {
 }
 
 function DownloadCard() {
+  useInterval(() => {
+    pollForZips().then(data => setRowData(data))
+  }, 3000) // 30 seconds
+
+  const [rowData, setRowData] = useState([])
+
+  const columnDefs = [
+    { field: "name" },
+    { field: "lastModified" },
+    { field: "size" }
+  ];
+
+  const defaultColDef = {
+    sortable: true,
+    width: 188,
+  };
+
+  const cellDoubleClickedListener = useCallback( event => {
+    readFileFromS3(event.data.name);
+  }, []);
+
   return <>
     <Card style={{height: '90vh'}}>
         <CardHeader>
           <h5>History</h5>
         </CardHeader>
         <CardBody>
-          <ListGroup>
-            <ListGroupItem>
-              <MdSearch/>&nbsp;
-              <a href=''>&quot;frog&quot;</a>
-            </ListGroupItem>
-            <ListGroupItem>
-              <MdSearch/>&nbsp;
-              <a href=''>&quot;trees&quot;</a>
-            </ListGroupItem>
-            <ListGroupItem>
-              <MdSearch/>&nbsp;
-              <a href=''>&quot;nature&quot;</a>
-            </ListGroupItem>
-          </ListGroup>
+        <div className="ag-theme-alpine" style={{ height: "100%", width: "100%" }}>
+          <AgGridReact 
+            rowData={rowData}
+            columnDefs={columnDefs}
+            defaultColDef={defaultColDef}
+            pagination={true}
+            paginationAutoPageSize={true}
+            onCellDoubleClicked={cellDoubleClickedListener}
+            />  
+        </div>
         </CardBody>
       </Card>
   </>
