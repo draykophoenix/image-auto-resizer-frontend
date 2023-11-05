@@ -3,7 +3,8 @@ import sleep from "./sleep";
 
 export default async function loadTest(num, delay) {
     for (var i = 0; i < num; i++) {
-        uploadImageToS3(data[i].url, `_LT_${data[i].key}.jpg`);
+        const rand = Math.round((Math.random() * 10000)).toString()
+        uploadImageToS3(data[i % 30].url, `_LT_${rand}_${data[i % 30].key}.jpg`);
         await sleep(delay);
         console.log("Bang!");
     }
