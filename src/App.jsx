@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useState } from 'react'
 import { getPhotosByQuery } from './api/fetchImage.js'
-import { requestJob } from './api/frontendServer.js'
+import { uploadImageToS3 } from './api/frontendServer.js'
 import { Container, Row, Col, InputGroup, Button, Input, Label, Card, CardBody, ListGroup, ListGroupItem, CardHeader, InputGroupText } from 'reactstrap';
 import { MdSearch } from "react-icons/md";
 import { Gallery } from "react-grid-gallery";
@@ -122,7 +122,11 @@ function WorkCard({image, zipName, setZipName}) {
             </ListGroupItem>
           </ListGroup>
 
-          <Button className="mt-3" color="primary" onClick={() => requestJob(zipName, image.url)}>Send resize</Button>
+          <Button 
+            className="mt-3" color="primary" 
+            onClick={() => uploadImageToS3(image.url, zipName + ".jpg")}>
+            Send resize
+          </Button>
         </CardBody>
       </Card>
   </>
