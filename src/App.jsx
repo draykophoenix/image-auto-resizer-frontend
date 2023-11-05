@@ -2,8 +2,8 @@
 import './App.css'
 import { getPhotosByQuery } from './api/fetchImage.js'
 import { uploadImageToS3, pollForZips, readFileFromS3 } from './api/frontendServer.js'
-import useInterval from './helper/useInterval.jsx'
-import sleep from './helper/sleep.jsx'
+import useInterval from './utils/useInterval.jsx'
+import sleep from './utils/sleep.jsx'
 
 
 import { useState, useCallback } from 'react'
@@ -84,7 +84,7 @@ function WorkCard({image, zipName, setZipName}) {
   const [invalid, setInvalid] = useState(false)
   const [alert, setAlert] = useState(false);
 
-  const specialCharactersPattern = /[!@#$%^&*()_+{}[\]:;<>,.?~\\]/;
+  const specialCharactersPattern = /[!@#$%^&*()+{}[\]:;<>,.?~\\]/;
 
   const handleInput = (e) => {
     if (specialCharactersPattern.test(e.target.value)) {
@@ -145,7 +145,7 @@ function WorkCard({image, zipName, setZipName}) {
 function DownloadCard() {
   useInterval(() => {
     pollForZips().then(data => setRowData(data))
-  }, 500) // 5 seconds
+  }, 5000) // 5 seconds
 
   const [rowData, setRowData] = useState([])
 
@@ -157,7 +157,7 @@ function DownloadCard() {
 
   const defaultColDef = {
     sortable: true,
-    width: 188,
+    width: 188
   };
 
   const cellDoubleClickedListener = useCallback( event => {

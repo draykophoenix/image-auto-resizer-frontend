@@ -1,18 +1,18 @@
 import axios from 'axios';
 import { Buffer } from 'buffer';
-
-// const SERVER_URL = "http://ec2-3-27-195-136.ap-southeast-2.compute.amazonaws.com:3000";
-const SERVER_URL = "http://localhost:3000"
+import fetchConfig from '../utils/fetchConfig';
 
 // TODO: Add same name error handling
 function requestPresignedUploadURL(name) {
-  return fetch(SERVER_URL + '/requestUploadURL/' + name)
+  return fetchConfig()
+  .then(config => fetch(config.frontendServerURL + '/requestUploadURL/' + name))
   .then(res => res.json())
   .then(json => json.url)
 }
 
 function requestPresignedReadURL(key) {
-  return fetch(SERVER_URL + '/requestReadURL/' + key)
+  return fetchConfig()
+  .then(config => fetch(config.frontendServerURL + '/requestReadURL/' + key))
   .then(res => res.json())
   .then(json => json.url)
 }
@@ -39,7 +39,8 @@ export async function uploadImageToS3(url, key) {
 }
 
 export function pollForZips() {
-  return fetch(SERVER_URL + '/latestZipFiles')
+  return fetchConfig()
+  .then(config => fetch(config.frontendServerURL + '/latestZipFiles'))
   .then(res => res.json())
   .then(json => json.map( file => {
     return {
