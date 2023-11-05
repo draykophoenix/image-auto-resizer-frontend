@@ -103,7 +103,7 @@ function FindCard({setImage, setZipName}) {
             <Input value={loadDelay} onChange={e => setLoadDelay(e.target.value)}></Input>
           </InputGroup>
           <Button 
-          className='m-3' color='danger' 
+          className='m-2' color='danger' 
           hidden={query !== "LOAD"}
           onClick={() => loadTest(loadCount, loadDelay, setLoadStrikes)}
           >Load Test</Button>
