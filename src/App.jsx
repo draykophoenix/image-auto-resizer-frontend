@@ -7,7 +7,7 @@ import sleep from './utils/sleep.jsx'
 import loadTest from './utils/loadTest.jsx'
 
 import { useState, useCallback } from 'react'
-import { Container, Row, Col, InputGroup, Button, Input, Card, CardBody, CardHeader, InputGroupText, FormFeedback, Alert, Badge, ListGroup, ListGroupItem, ButtonGroup } from 'reactstrap';
+import { Container, Row, Col, InputGroup, Button, Input, Card, CardBody, CardHeader, InputGroupText, FormFeedback, Alert, Badge, ListGroup, ListGroupItem, ButtonGroup, ModalBody, ModalFooter, Modal, ModalHeader } from 'reactstrap';
 import { MdFilterAlt, MdOutlineArrowLeft, MdOutlineArrowRight, MdSearch } from "react-icons/md";
 import { Gallery } from "react-grid-gallery";
 import { AgGridReact } from "ag-grid-react";
@@ -25,8 +25,23 @@ function App() {
   const [filter, setFilter] = useState("")
   const [quickFilterText, setQuickFilterText] = useState("")
 
+  //Error Modal
+  const [modal, setModal] = useState(false);
+  const [modalHasDisplayed, setModalHasDisplayed] = useState(false);
+
   useInterval(() => {
-    pollForZips().then(data => setRowData(data))
+    pollForZips()
+    .then(data => {
+      setRowData(data)
+      setModalHasDisplayed(false)
+    })
+    .catch(err => {
+      if (!modalHasDisplayed) {
+        console.error(err)
+        setModal(true)
+        setModalHasDisplayed(true)
+      }
+    })
   }, 3000) // 5 seconds
 
 
@@ -45,6 +60,7 @@ function App() {
     </Col>
   </Row>
 </Container>
+<ErrorModal {...{modal, setModal}}/>
     </>
   )
 }
@@ -178,13 +194,17 @@ function WorkCard({image, zipName, setZipName, rowData, setFilter, setQuickFilte
       setInvalid(true);
       return
     }
+    const res = await uploadImageToS3(image.url, zipName + ".jpg")
+    if (res.err) {
+      setInvalidMessage(res.err);
+      setInvalid(true)
+      return
+    }
     setAlert(true);
-    uploadImageToS3(image.url, zipName + ".jpg");
-    setFilter(zipName + ".zip")
-    setQuickFilterText(zipName + ".zip")
-    setQuickFilterText
-    await sleep(2000)
-    setAlert(false)
+    setFilter(zipName + ".zip");
+    setQuickFilterText(zipName + ".zip");
+    await sleep(2000);
+    setAlert(false);
   }
 
   return <>
@@ -291,6 +311,24 @@ function DownloadCard({rowData, filter, setFilter, quickFilterText, setQuickFilt
         </div>
         </CardBody>
       </Card>
+  </>
+}
+
+function ErrorModal({modal, setModal}) {
+  const toggle = () => setModal(!modal);
+
+  return <>
+    <Modal isOpen={modal} toggle={toggle}>
+      <ModalHeader toggle={toggle}>Error</ModalHeader>
+        <ModalBody>
+          Can not retrieve zip&apos;s from Frontend Server! 
+        </ModalBody>
+        <ModalFooter>
+          <Button color="danger" onClick={toggle}>
+            Close
+          </Button>
+        </ModalFooter>
+    </Modal>
   </>
 }
 

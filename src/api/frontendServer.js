@@ -18,7 +18,13 @@ function requestPresignedReadURL(key) {
 }
 
 export async function uploadImageToS3(url, key) {
-  const presignedURL = await requestPresignedUploadURL(key);
+  var presignedURL
+  try {
+    presignedURL = await requestPresignedUploadURL(key);
+  } catch (err) {
+    console.error(err)
+    return {err: "Failed to get presigned URL!"}
+  }
   const contentType = "application/jpeg"
 
   // Download the image from the provided URL
@@ -27,13 +33,14 @@ export async function uploadImageToS3(url, key) {
   });
 
   if (imageResponse.status !== 200) {
-    throw new Error("Failed to fetch the image.");
+    console.error(imageResponse)
+    return {err: "Failed to get image!"}
   }
 
   const imageData = Buffer.from(imageResponse.data);
 
   // Upload the downloaded image data to S3 using a presigned URL
-  await axios.put(presignedURL, imageData, {
+  return await axios.put(presignedURL, imageData, {
     headers: { "Content-Type": contentType },
   });
 }
