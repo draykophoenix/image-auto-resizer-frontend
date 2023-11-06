@@ -21,8 +21,14 @@ function App() {
   // Worker
   const [zipName, setZipName] = useState("");
   // Download
+  const [rowData, setRowData] = useState([])
   const [filter, setFilter] = useState("")
   const [quickFilterText, setQuickFilterText] = useState("")
+
+  useInterval(() => {
+    pollForZips().then(data => setRowData(data))
+  }, 3000) // 5 seconds
+
 
   return (
   <>
@@ -32,10 +38,10 @@ function App() {
       <FindCard {...{setImage, setZipName}}/>
     </Col>
     <Col>
-      <WorkCard {...{image, zipName, setZipName, setFilter, setQuickFilterText}}/>
+      <WorkCard {...{image, zipName, setZipName, rowData, setFilter, setQuickFilterText}}/>
     </Col>
     <Col>
-      <DownloadCard {... {filter, setFilter, quickFilterText, setQuickFilterText}}/>
+      <DownloadCard {... {rowData, filter, setFilter, quickFilterText, setQuickFilterText}}/>
     </Col>
   </Row>
 </Container>
@@ -145,14 +151,18 @@ function FindCard({setImage, setZipName}) {
     </>
 }
 
-function WorkCard({image, zipName, setZipName, setFilter, setQuickFilterText}) {
+function WorkCard({image, zipName, setZipName, rowData, setFilter, setQuickFilterText}) {
   const [invalid, setInvalid] = useState(false);
   const [alert, setAlert] = useState(false);
+  const [invalidMessage, setInvalidMessage] = useState("");
 
+  const invalidNoSpecialCharacters = "Name cannot include special characters"
+  const invalidNameExists = "A zip with this name already exists"
   const specialCharactersPattern = /[!@#$%^&*()+{}[\]:;<>,.?~\\]/;
 
   const handleInput = (e) => {
     if (specialCharactersPattern.test(e.target.value)) {
+      setInvalidMessage(invalidNoSpecialCharacters)
       setInvalid(true)
     } else {
       if (invalid) {
@@ -163,6 +173,11 @@ function WorkCard({image, zipName, setZipName, setFilter, setQuickFilterText}) {
   }
 
   const handleClick = async () => {
+    if (rowData.find(item => item.name === (zipName + ".zip" ))) {
+      setInvalidMessage(invalidNameExists);
+      setInvalid(true);
+      return
+    }
     setAlert(true);
     uploadImageToS3(image.url, zipName + ".jpg");
     setFilter(zipName + ".zip")
@@ -194,7 +209,7 @@ function WorkCard({image, zipName, setZipName, setFilter, setQuickFilterText}) {
               Name
             </InputGroupText>
             <Input onChange={handleInput} value={zipName} disabled={!image.src} invalid={invalid}/>
-            <FormFeedback tooltip className='m-1 ms-5'>Name cannot include special characters</FormFeedback>
+            <FormFeedback tooltip className='m-1 ms-5'>{invalidMessage}</FormFeedback>
           </InputGroup>
           <Button 
             className="mt-3" color="primary" 
@@ -226,14 +241,7 @@ function WorkCard({image, zipName, setZipName, setFilter, setQuickFilterText}) {
   </>
 }
 
-function DownloadCard({filter, setFilter, quickFilterText, setQuickFilterText}) {
-  useInterval(() => {
-    pollForZips().then(data => setRowData(data))
-  }, 3000) // 5 seconds
-
-  const [rowData, setRowData] = useState([])
-
-
+function DownloadCard({rowData, filter, setFilter, quickFilterText, setQuickFilterText}) {
   async function handleFilter() {
     setQuickFilterText(filter)
   }

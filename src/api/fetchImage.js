@@ -1,15 +1,13 @@
 import { createApi } from 'unsplash-js';
-
-// const proxiedApi = createApi({
-//   apiUrl: 'https://mywebsite.com/unsplash-proxy',
-// });
-
-const tempKeyedApi = createApi({
-  accessKey: "MVD5e8doDm10FXRTCXPY6HeEMGUMV6eLbLqAHp0wruE"
-});
+import fetchConfig from '../utils/fetchConfig';
 
 export async function getPhotosByQuery(query, page) {
-  const res = await tempKeyedApi.search.getPhotos({ query, page: page, perPage: 5 });
+  const config = await fetchConfig()
+  const keyedApi = createApi({
+    accessKey: config.unsplashAPIKey
+  })
+
+  const res = await keyedApi.search.getPhotos({ query, page: page, perPage: 5 });
   if (res.errors) {
     throw new Error("Error fetching queried photo: " + res.errors[0]);
   }
