@@ -8,15 +8,16 @@ const tempKeyedApi = createApi({
   accessKey: "MVD5e8doDm10FXRTCXPY6HeEMGUMV6eLbLqAHp0wruE"
 });
 
-export async function getPhotosByQuery(query) {
-  const res = await tempKeyedApi.search.getPhotos({ query, perPage: 5 });
+export async function getPhotosByQuery(query, page) {
+  const res = await tempKeyedApi.search.getPhotos({ query, page: page, perPage: 5 });
   if (res.errors) {
     throw new Error("Error fetching queried photo: " + res.errors[0]);
   }
-  console.log(res.response.results.map((image, i) => {return {
-    url : image.urls.full,
-    name: query + "-" + i
-  }}));
+  // // -- Generate test data --
+  // console.log(res.response.results.map((image, i) => {return {
+  //   url : image.urls.full,
+  //   name: query + "-" + i
+  // }}));
 
   return res.response.results.map(image => {return {
     src: image.urls.small, 
